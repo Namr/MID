@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(MID)
+
+set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+IF (WIN32)
+  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/glew")
+  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/tiff")
+endif()
+
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(TIFF REQUIRED)
+
+include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS})
+
+add_executable(MID main.cpp)
+
+target_link_libraries(MID ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} glfw ${TIFF_LIBRARIES})
