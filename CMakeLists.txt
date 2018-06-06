@@ -15,8 +15,8 @@ find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(TIFF REQUIRED)
 
-include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR} ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS})
 
-add_executable(MID main.cpp)
+add_executable(MID main.cpp display.cpp)
 
 target_link_libraries(MID ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} glfw ${TIFF_LIBRARIES})

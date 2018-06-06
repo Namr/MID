@@ -3,13 +3,16 @@
 
 #include <iostream>
 
-class display
+using namespace std;
+
+class Display
 {
     unsigned int VAO, VBO, EBO;
     GLuint loadShader(const char *filepath, GLenum type);
     GLuint shaderProgram;
-    
+    float vertices[8];
+    GLuint triangles[6];
 public:
-    void init();
+    Display(float tlX, float tlY);
     void update();
 };

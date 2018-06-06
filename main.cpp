@@ -4,6 +4,8 @@
 #include <tiffio.h>
 #include <iostream>
 
+#include "display.hpp"
+
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
@@ -46,6 +48,7 @@ int main()
     glViewport(0, 0, width, height);
 
     //image view initilization
+    Display display(-1.0f, 1.0f);
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -53,11 +56,12 @@ int main()
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
-        // Render
-
         //Clear the screen with a background color
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        //render objects
+        display.update();
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
