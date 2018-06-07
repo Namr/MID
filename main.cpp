@@ -19,7 +19,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
     // Create a GLFW window and GL context
     GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "MID", nullptr, nullptr);
@@ -42,11 +42,6 @@ int main()
         return -1;
     }
 
-    // Define the viewport dimensions
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-
     //image view initilization
     Display display(-1.0f, 1.0f);
 
@@ -55,6 +50,12 @@ int main()
     {
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
+
+
+        // Define the viewport dimensions in case the window size was changed by the user
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        glViewport(0, 0, width, height);
 
         //Clear the screen with a background color
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
