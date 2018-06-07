@@ -10,7 +10,7 @@
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
 // Window dimensions
-const GLuint WIDTH = 1366, HEIGHT = 720;
+const GLuint WIDTH = 720, HEIGHT = 720;
 
 int main()
 {
@@ -44,13 +44,12 @@ int main()
 
     //image view initilization
     Display display(-1.0f, 1.0f);
-
+    
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
-
 
         // Define the viewport dimensions in case the window size was changed by the user
         int width, height;
