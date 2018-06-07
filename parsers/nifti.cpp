@@ -1,4 +1,4 @@
-#include "nifti.hpp"
+#include "parsers/nifti.hpp"
 
 NIFTI::NIFTI(std::string filename)
 {
@@ -10,48 +10,57 @@ NIFTI::NIFTI(std::string filename)
         filename.replace(index, 3, "hdr");
     }
 
-    std::ifstream niftiFile(filename.c_str(), std::ios::in | std::ios::binary);
+    std::ifstream niftiFile(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (niftiFile.is_open())
+    {
+        char *header;
 
-    //READING HEADER: BASED ON http://www.grahamwideman.com/gw/brain/analyze/formatdoc.htm
-    int sizeof_hdr = readInt32(niftiFile);
+        //READING HEADER: BASED ON http://www.grahamwideman.com/gw/brain/analyze/formatdoc.htm
 
-    char data_type[10];
-    niftiFile.read(data_type, 10);
-    char db_name[18];
-    niftiFile.read(data_type, 18);
+        //find the size of the header, and then read it into memory
+        int sizeof_hdr = readInt32(niftiFile);
+        header = new char[sizeof_hdr];
+        niftiFile.seekg(0, std::ios::beg);
+        niftiFile.read(header, sizeof_hdr);
 
-    int extents = readInt32(niftiFile);
-    int session_error = readInt16(niftiFile);
-    char regular = readChar(niftiFile);
-    char hkey_un0 = readChar(niftiFile);
-    int dimNum = readInt16(niftiFile);
-    width = readInt16(niftiFile);
-    height = readInt16(niftiFile);
-    depth = readInt16(niftiFile);
-    int time = readInt16(niftiFile);
 
-    int dim5 = readInt16(niftiFile);
-    int dim6 = readInt16(niftiFile); //these three are undocumented and do nothing
-    int dim7 = readInt16(niftiFile);
+        dimNum = (((int)header[40]) << 8) | header[41];
+        width = (((int)header[42]) << 8) | header[43];
+        height = (((int)header[44]) << 8) | header[45];
+        depth = (((int)header[46]) << 8) | header[47];
+        time = (((int)header[48]) << 8) | header[49];
 
-    char vox_units[4];
-    niftiFile.read(vox_units, 4);
-    char cal_units[8];
-    niftiFile.read(cal_units, 8);
-    
-    int unused1 = readInt16(niftiFile);
-    int datatype = readInt16(niftiFile);
-    int bitpix = readInt16(niftiFile);
-    int dim_un0 = readInt16(niftiFile);
+        bitsPerPixel = (((int)header[72]) << 8) | header[73];
+        bytesPerPixel = bitsPerPixel / 8;
 
-    float pixdim0 = readFloat(niftiFile);
-    float pixdim1 = readFloat(niftiFile);
-    float pixdim2 = readFloat(niftiFile);
-    float pixdim3 = readFloat(niftiFile);
-    float pixdim4 = readFloat(niftiFile);
-    float pixdim5 = readFloat(niftiFile);
-    float pixdim6 = readFloat(niftiFile);
-    float pixdim7 = readFloat(niftiFile);
+        memcpy(&voxelWidth, &header[80], sizeof(voxelWidth));
+        memcpy(&voxelHeight, &header[84], sizeof(voxelWidth));
+        memcpy(&voxelDepth, &header[88], sizeof(voxelWidth));
 
-    float vox_offset = readFloat(niftiFile);
+        float vox_offset;
+        memcpy(&voxelWidth, &header[108], sizeof(voxelWidth));
+    }
+    //switch back to reading image data
+    if (extension == "img" || extension == "hdr")
+    {
+        int index = filename.find("hdr");
+        filename.replace(index, 3, "img");
+        niftiFile = std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
+    }
+
+    //loop through MRI file and seperate each pixel into its x,y,z cordinate
+    for (int z = 0; z < depth; z++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                //place data into a char buffer and then reinterpret into an int
+                //allocate memory to store a single pixel, this size is determined by the bitsperpixel value in the header
+                char *pix = (char *)malloc(bytesPerPixel * sizeof(char));
+                niftiFile.read(pix, bytesPerPixel);
+                data[x][y][z] = reinterpret_cast<unsigned char &>(pix[0]);
+            }
+        }
+    }
 }

@@ -30,8 +30,10 @@ class NIFTI
         stream.read(val, 1);
         return val[0];
     }
+
   public:
-    int width, height, depth;
+    int dimNum, width, height, depth, time, bitsPerPixel, bytesPerPixel;
+    float voxelWidth, voxelHeight, voxelDepth;
     char *data;
     NIFTI(std::string filepath);
 };
