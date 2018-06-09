@@ -1,39 +1,20 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 class NIFTI
 {
-    int32_t readInt32(std::ifstream &stream)
-    {
-        uint32_t val;
-        stream.read(reinterpret_cast<char *>(&val), sizeof(val));
-        return val;
-    }
-
-    int16_t readInt16(std::ifstream &stream)
-    {
-        uint16_t val;
-        stream.read(reinterpret_cast<char *>(&val), sizeof(val));
-        return val;
-    }
-
-    float_t readFloat(std::ifstream &stream)
-    {
-        float_t val;
-        stream.read(reinterpret_cast<char *>(&val), sizeof(val));
-        return val;
-    }
-    char readChar(std::ifstream &stream)
-    {
-        char val[1];
-        stream.read(val, 1);
-        return val[0];
-    }
-
   public:
-    int dimNum, width, height, depth, time, bitsPerPixel, bytesPerPixel;
-    float voxelWidth, voxelHeight, voxelDepth;
+    int16_t dimNum, width, height, depth, time, bitsPerPixel, bytesPerPixel;
+    float voxelWidth, voxelHeight, voxelDepth, vox_offset;
     char *data;
     NIFTI(std::string filepath);
 };
+
+template <class T>
+void endswap(T *objp)
+{
+    unsigned char *memp = reinterpret_cast<unsigned char *>(objp);
+    std::reverse(memp, memp + sizeof(T));
+}

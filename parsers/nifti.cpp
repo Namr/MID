@@ -10,57 +10,67 @@ NIFTI::NIFTI(std::string filename)
         filename.replace(index, 3, "hdr");
     }
 
-    std::ifstream niftiFile(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream niftiFile(filename.c_str(), std::ios::in | std::ios::binary);
     if (niftiFile.is_open())
     {
         char *header;
+        int shouldSwap = 0;
 
         //READING HEADER: BASED ON http://www.grahamwideman.com/gw/brain/analyze/formatdoc.htm
 
-        //find the size of the header, and then read it into memory
-        int sizeof_hdr = readInt32(niftiFile);
+        //find the size of the header, and then read it into memory all at once
+        int32_t sizeof_hdr;
+        niftiFile.read(reinterpret_cast<char *>(&sizeof_hdr), sizeof(sizeof_hdr));
+        if (sizeof_hdr != 348)
+        {
+            endswap(&sizeof_hdr);
+            shouldSwap = 1;
+        }
+
+        std::cout << sizeof_hdr << std::endl;
+
         header = new char[sizeof_hdr];
         niftiFile.seekg(0, std::ios::beg);
         niftiFile.read(header, sizeof_hdr);
 
+        //load the important values from the header memory block into their corresponding varibles
+        memcpy(&dimNum, &header[40], sizeof(dimNum));
+        memcpy(&width, &header[42], sizeof(width));
+        memcpy(&height, &header[44], sizeof(height));
+        memcpy(&depth, &header[46], sizeof(depth));
+        memcpy(&time, &header[48], sizeof(time));
+        memcpy(&bitsPerPixel, &header[72], sizeof(bitsPerPixel));
+        memcpy(&voxelWidth, &header[80], sizeof(voxelWidth));
+        memcpy(&voxelHeight, &header[84], sizeof(voxelHeight));
+        memcpy(&voxelDepth, &header[88], sizeof(voxelDepth));
 
-        dimNum = (((int)header[40]) << 8) | header[41];
-        width = (((int)header[42]) << 8) | header[43];
-        height = (((int)header[44]) << 8) | header[45];
-        depth = (((int)header[46]) << 8) | header[47];
-        time = (((int)header[48]) << 8) | header[49];
+        memcpy(&vox_offset, &header[108], sizeof(vox_offset));
 
-        bitsPerPixel = (((int)header[72]) << 8) | header[73];
+        if (shouldSwap)
+        {
+            endswap(&dimNum);
+            endswap(&width);
+            endswap(&depth);
+            endswap(&time);
+            endswap(&bitsPerPixel);
+            endswap(&voxelWidth);
+            endswap(&voxelHeight);
+            endswap(&voxelDepth);
+        }
+
         bytesPerPixel = bitsPerPixel / 8;
 
-        memcpy(&voxelWidth, &header[80], sizeof(voxelWidth));
-        memcpy(&voxelHeight, &header[84], sizeof(voxelWidth));
-        memcpy(&voxelDepth, &header[88], sizeof(voxelWidth));
-
-        float vox_offset;
-        memcpy(&voxelWidth, &header[108], sizeof(voxelWidth));
-    }
-    //switch back to reading image data
-    if (extension == "img" || extension == "hdr")
-    {
-        int index = filename.find("hdr");
-        filename.replace(index, 3, "img");
-        niftiFile = std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
-    }
-
-    //loop through MRI file and seperate each pixel into its x,y,z cordinate
-    for (int z = 0; z < depth; z++)
-    {
-        for (int y = 0; y < height; y++)
+        //switch back to reading image data, if all data is in one file (nii) move to the data
+        if (extension == "img" || extension == "hdr")
         {
-            for (int x = 0; x < width; x++)
-            {
-                //place data into a char buffer and then reinterpret into an int
-                //allocate memory to store a single pixel, this size is determined by the bitsperpixel value in the header
-                char *pix = (char *)malloc(bytesPerPixel * sizeof(char));
-                niftiFile.read(pix, bytesPerPixel);
-                data[x][y][z] = reinterpret_cast<unsigned char &>(pix[0]);
-            }
+            int index = filename.find("hdr");
+            filename.replace(index, 3, "img");
+            niftiFile = std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
         }
+        else if (extension == "nii")
+        {
+            niftiFile.seekg((int)vox_offset);
+        }
+        niftiFile.read(data, width * height * depth * time * bytesPerPixel);
     }
 }

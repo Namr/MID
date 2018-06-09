@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "display.hpp"
+#include "parsers/nifti.hpp"
 
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -44,7 +45,8 @@ int main()
 
     //image view initilization
     Display display(-1.0f, 1.0f);
-    
+    NIFTI file("F:/Programs/Programing/MID/build/Debug/baal_intensity.img");
+
     // Game loop
     while (!glfwWindowShouldClose(window))
     {

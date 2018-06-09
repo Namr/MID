@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-
 class Display
 {
     unsigned int VAO, VBO, EBO;
@@ -11,7 +10,8 @@ class Display
     GLuint shaderProgram;
     float vertices[8];
     GLuint triangles[6];
-public:
+
+  public:
     Display(float tlX, float tlY);
     void update();
 };
