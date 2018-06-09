@@ -50,15 +50,19 @@ NIFTI::NIFTI(std::string filename)
         {
             endswap(&dimNum);
             endswap(&width);
+            endswap(&height);
             endswap(&depth);
             endswap(&time);
             endswap(&bitsPerPixel);
             endswap(&voxelWidth);
             endswap(&voxelHeight);
             endswap(&voxelDepth);
+            endswap(&vox_offset);
         }
 
         bytesPerPixel = bitsPerPixel / 8;
+        //free memory
+        delete[] header;
 
         //switch back to reading image data, if all data is in one file (nii) move to the data
         if (extension == "img" || extension == "hdr")
@@ -71,6 +75,10 @@ NIFTI::NIFTI(std::string filename)
         {
             niftiFile.seekg((int)vox_offset);
         }
-        niftiFile.read(data, width * height * depth * time * bytesPerPixel);
+
+        //load data chunk into memory
+        int sizeof_data = std::abs(width * height * depth * time * bytesPerPixel);
+        data = new char[sizeof_data];
+        niftiFile.read(data, sizeof_data);
     }
 }

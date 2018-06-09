@@ -45,7 +45,7 @@ int main()
 
     //image view initilization
     Display display(-1.0f, 1.0f);
-    NIFTI file("F:/Programs/Programing/MID/build/Debug/baal_intensity.img");
+    NIFTI file("F:/Programs/Programing/MID/Ellie_Sarah_Top.nii");
 
     // Game loop
     while (!glfwWindowShouldClose(window))
