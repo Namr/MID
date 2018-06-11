@@ -3,18 +3,31 @@
 //ARGUEMENTS: The cordinates of the top left vertex of the dispaly
 Display::Display(float tlX, float tlY)
 {
-    //generate vertex data based on the top left cordinates
+    //generate vertex position based on the top left cordinates
     vertices[0] = tlX;
     vertices[1] = tlY;
 
-    vertices[2] = tlX + 1.0f;
-    vertices[3] = tlY;
-
     vertices[4] = tlX + 1.0f;
-    vertices[5] = tlY - 1.0f;
+    vertices[5] = tlY;
 
-    vertices[6] = tlX;
-    vertices[7] = tlY - 1.0f;
+    vertices[8] = tlX + 1.0f;
+    vertices[9] = tlY - 1.0f;
+
+    vertices[12] = tlX;
+    vertices[13] = tlY - 1.0f;
+
+    //set texture coordinates
+    vertices[2] = 0.0f;
+    vertices[3] = 0.0f;
+
+    vertices[6] = 1.0f;
+    vertices[7] = 0.0f;
+
+    vertices[10] = 1.0f;
+    vertices[11] = 1.0f;
+
+    vertices[14] = 0.0f;
+    vertices[15] = 1.0f;
 
     //generate triangle data for a square
     triangles[0] = 0;
@@ -80,16 +93,29 @@ Display::Display(float tlX, float tlY)
     //send the formatting of the vertex data to the GPU
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
+    GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoords");
+    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "textureArray"), 0);
+}
+
+void Display::useNIFTI(NIFTI file)
+{
 }
 
 void Display::update()
 {
+    glActiveTexture(GL_TEXTURE0);
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
+    glUniform1i(glGetUniformLocation(shaderProgram, "layer"), layer);
+    
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 

@@ -46,6 +46,7 @@ NIFTI::NIFTI(std::string filename)
 
         memcpy(&vox_offset, &header[108], sizeof(vox_offset));
 
+        //if endianness is wrong, swap all the varibles to their correct values
         if (shouldSwap)
         {
             endswap(&dimNum);
@@ -80,5 +81,22 @@ NIFTI::NIFTI(std::string filename)
         int sizeof_data = std::abs(width * height * depth * time * bytesPerPixel);
         data = new char[sizeof_data];
         niftiFile.read(data, sizeof_data);
+
+        //generate the buffers for the texture data which will be supplied by another function
+        glActiveTexture(GL_TEXTURE0);
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+
+        //allocate memory for the incoming data
+        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R8, width, height, depth);
+
+        //upload data, the 0s are specifiying to start the upload from the very start of the data
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, depth, GL_R8, GL_UNSIGNED_BYTE, data);
+
+        //Set Texture Parameters
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 }

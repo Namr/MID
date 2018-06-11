@@ -44,8 +44,8 @@ int main()
     }
 
     //image view initilization
-    Display display(-1.0f, 1.0f);
     NIFTI file("F:/Programs/Programing/MID/Ellie_Sarah_Top.nii");
+    Display display(-1.0f, 1.0f);
 
     // Game loop
     while (!glfwWindowShouldClose(window))

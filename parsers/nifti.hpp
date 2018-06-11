@@ -1,3 +1,8 @@
+#ifndef NIFTI_H
+#define NIFTI_H
+
+#include <GL/glew.h>
+
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -10,6 +15,7 @@ class NIFTI
     int16_t dimNum, width, height, depth, time, bitsPerPixel, bytesPerPixel;
     float voxelWidth, voxelHeight, voxelDepth, vox_offset;
     char *data;
+    GLuint texture;
     NIFTI(std::string filepath);
 };
 
@@ -19,3 +25,5 @@ void endswap(T *objp)
     unsigned char *memp = reinterpret_cast<unsigned char *>(objp);
     std::reverse(memp, memp + sizeof(T));
 }
+
+#endif
