@@ -6,8 +6,8 @@ set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 IF (WIN32)
-  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/glew")
-  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/tiff")
+  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files (x86)/glew")
+  list(APPEND CMAKE_PREFIX_PATH "C:/Program Files (x86)/tiff")
 endif()
 
 find_package(OpenGL REQUIRED)
