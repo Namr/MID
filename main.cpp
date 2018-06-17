@@ -65,6 +65,11 @@ int main()
         //render objects
         display.update();
 
+        //catch errors
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR)
+            std::cout << "OPENGL ERROR: " << err << std::endl;
+
         // Swap the screen buffers
         glfwSwapBuffers(window);
     }

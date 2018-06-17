@@ -78,11 +78,10 @@ NIFTI::NIFTI(std::string filename)
         //load data chunk into memory
         int sizeof_data = std::abs(width * height * depth * time * bytesPerPixel);
         data = new GLubyte[sizeof_data];
-        niftiFile.read((char*) data, sizeof_data);
+        niftiFile.read((char *)data, sizeof_data);
 
         if (shouldSwap)
             endswap(data);
-        
 
         //generate the buffers for the texture data which will be supplied by another function
         glActiveTexture(GL_TEXTURE0);

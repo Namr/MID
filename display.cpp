@@ -115,7 +115,7 @@ void Display::update()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "layer"), layer);
-    
+
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 

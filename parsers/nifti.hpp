@@ -6,7 +6,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <cmath> 
+#include <cmath>
 #include <algorithm>
 
 class NIFTI
