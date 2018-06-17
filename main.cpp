@@ -44,7 +44,7 @@ int main()
     }
 
     //image view initilization
-    NIFTI file("F:/Programs/Programing/MID/Ellie_Sarah_Top.nii");
+    NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
     Display display(-1.0f, 1.0f);
 
     // Game loop

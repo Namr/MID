@@ -98,7 +98,7 @@ Display::Display(float tlX, float tlY)
     GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoords");
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-
+    glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureArray"), 0);
 }
 

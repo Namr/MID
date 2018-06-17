@@ -27,8 +27,6 @@ NIFTI::NIFTI(std::string filename)
             shouldSwap = 1;
         }
 
-        std::cout << sizeof_hdr << std::endl;
-
         header = new char[sizeof_hdr];
         niftiFile.seekg(0, std::ios::beg);
         niftiFile.read(header, sizeof_hdr);
@@ -79,8 +77,12 @@ NIFTI::NIFTI(std::string filename)
 
         //load data chunk into memory
         int sizeof_data = std::abs(width * height * depth * time * bytesPerPixel);
-        data = new char[sizeof_data];
-        niftiFile.read(data, sizeof_data);
+        data = new GLubyte[sizeof_data];
+        niftiFile.read((char*) data, sizeof_data);
+
+        if (shouldSwap)
+            endswap(data);
+        
 
         //generate the buffers for the texture data which will be supplied by another function
         glActiveTexture(GL_TEXTURE0);
@@ -88,10 +90,10 @@ NIFTI::NIFTI(std::string filename)
         glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 
         //allocate memory for the incoming data
-        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R8, width, height, depth);
+        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R8, width, height, 30);
 
         //upload data, the 0s are specifiying to start the upload from the very start of the data
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, depth, GL_R8, GL_UNSIGNED_BYTE, data);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, 30, GL_RED, GL_UNSIGNED_BYTE, data);
 
         //Set Texture Parameters
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

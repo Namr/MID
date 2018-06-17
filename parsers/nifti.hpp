@@ -14,7 +14,7 @@ class NIFTI
   public:
     int16_t dimNum, width, height, depth, time, bitsPerPixel, bytesPerPixel;
     float voxelWidth, voxelHeight, voxelDepth, vox_offset;
-    char *data;
+    GLubyte *data;
     GLuint texture;
     NIFTI(std::string filepath);
 };
