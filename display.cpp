@@ -100,6 +100,10 @@ Display::Display(float tlX, float tlY)
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureArray"), 0);
+
+    glUniform1f(glGetUniformLocation(shaderProgram, "zoom"), 1.5);
+    glUniform1f(glGetUniformLocation(shaderProgram, "xOffset"), 0.5f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "yOffset"), 0.1f);
 }
 
 void Display::useNIFTI(NIFTI file)
