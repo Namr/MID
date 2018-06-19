@@ -14,6 +14,7 @@ class Rectangle
   public:
     Vertex tl, tr, bl, br;
     Rectangle(Vertex topLeft, Vertex bottomRight);
+    Rectangle();
 };
 
 #endif

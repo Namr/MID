@@ -5,19 +5,25 @@
 
 #include <iostream>
 #include "parsers/nifti.hpp"
+#include "rectangle.h"
 
 class Display
 {
     unsigned int VAO, VBO, EBO;
     GLuint loadShader(const char *filepath, GLenum type);
     GLuint shaderProgram, texture;
-    float vertices[16];
     GLuint triangles[6];
+    float vertices[16];
   public:
     Display(float tlX, float tlY);
-    void useNIFTI(NIFTI file);
     void update();
+    void resize();
+    Rectangle position;
+    Rectangle textureCoords;
     int layer = 2;
+    float zoom = 1.0f;
+    float xOffset = 0.0f;
+    float yOffset = 0.0f;
 };
 
 #endif

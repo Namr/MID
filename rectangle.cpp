@@ -20,3 +20,8 @@ Rectangle::Rectangle(Vertex topLeft, Vertex bottomRight)
     tr = Vertex(bottomRight.x, topLeft.y);
     bl = Vertex(topLeft.x, bottomRight.y);
 }
+
+Rectangle::Rectangle()
+{
+    
+}
