@@ -158,10 +158,6 @@ void Display::update(GLFWwindow *window)
 
     glUniform1i(glGetUniformLocation(shaderProgram, "layer"), layer);
 
-    glUniform1f(glGetUniformLocation(shaderProgram, "zoom"), zoom);
-    glUniform1f(glGetUniformLocation(shaderProgram, "xOffset"), xOffset);
-    glUniform1f(glGetUniformLocation(shaderProgram, "yOffset"), yOffset);
-
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 
