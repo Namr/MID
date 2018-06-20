@@ -119,8 +119,8 @@ void Display::update(GLFWwindow *window)
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     //covert cursor position to screen space (normalized coords between -1 and 1)
-    xpos = map(xpos, 0.0f, WIDTH, -1.0f, 1.0f);
-    ypos = map(ypos, 0.0f, HEIGHT, 1.0f, -1.0f);
+    xpos = map((float)xpos, 0.0f, WIDTH, -1.0f, 1.0f);
+    ypos = map((float)ypos, 0.0f, HEIGHT, 1.0f, -1.0f);
 
     /*
     find the vertical and horizontal distances between the top left corner of the display
@@ -135,21 +135,21 @@ void Display::update(GLFWwindow *window)
     if (mouse0 == GLFW_PRESS && highlighting == 0)
     {
         highlighter = Rectangle();
-        highlighter.tl.x = map(xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
-        highlighter.tl.y = map(ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+        highlighter.tl.x = map((float)xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
+        highlighter.tl.y = map((float)ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
         highlighting = 1;
     }
-    if(mouse0 == GLFW_RELEASE && highlighting == 1)
+    if (mouse0 == GLFW_RELEASE && highlighting == 1)
     {
-        highlighter.br.x = map(xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
-        highlighter.br.y = map(ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+        highlighter.br.x = map((float)xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
+        highlighter.br.y = map((float)ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
 
         highlighter = Rectangle(highlighter.tl, highlighter.br);
         textureCoords = highlighter;
         resize();
         highlighting = 0;
     }
-    
+
     glActiveTexture(GL_TEXTURE0);
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
