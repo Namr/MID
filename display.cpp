@@ -1,12 +1,16 @@
 #include "display.hpp"
 
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 //ARGUEMENTS: The cordinates of the top left vertex of the dispaly
 Display::Display(float tlX, float tlY)
 {
     //generate vertex position, and texture coords based on the top left cordinates
     position = Rectangle(Vertex(tlX, tlY), Vertex(tlX + 1.0f, tlY - 1.0f));
     textureCoords = Rectangle(Vertex(0.0, 0.0), Vertex(1.0, 1.0));
-
 
     //generate triangle data for a square
     triangles[0] = 0;
@@ -110,8 +114,42 @@ void Display::resize()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_DYNAMIC_DRAW);
 }
 
-void Display::update()
+void Display::update(GLFWwindow *window)
 {
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    //covert cursor position to screen space (normalized coords between -1 and 1)
+    xpos = map(xpos, 0.0f, WIDTH, -1.0f, 1.0f);
+    ypos = map(ypos, 0.0f, HEIGHT, 1.0f, -1.0f);
+
+    /*
+    find the vertical and horizontal distances between the top left corner of the display
+    and the cursor, this distances is the same as the cursors local position on the display,
+    however since the display is smaller than the screen, the bounds are position indifferent
+    but not scale indifferent so they must be multiplied up to become normalized coordinates
+    */
+    xpos = std::abs(xpos - position.tl.x);
+    ypos = std::abs(ypos - position.tl.y);
+
+    int mouse0 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    if (mouse0 == GLFW_PRESS && highlighting == 0)
+    {
+        highlighter = Rectangle();
+        highlighter.tl.x = map(xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
+        highlighter.tl.y = map(ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+        highlighting = 1;
+    }
+    if(mouse0 == GLFW_RELEASE && highlighting == 1)
+    {
+        highlighter.br.x = map(xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
+        highlighter.br.y = map(ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+
+        highlighter = Rectangle(highlighter.tl, highlighter.br);
+        textureCoords = highlighter;
+        resize();
+        highlighting = 0;
+    }
+    
     glActiveTexture(GL_TEXTURE0);
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);

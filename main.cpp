@@ -4,14 +4,13 @@
 #include <tiffio.h>
 #include <iostream>
 
+#include "MID.h"
 #include "display.hpp"
 #include "parsers/nifti.hpp"
 
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
-// Window dimensions
-const GLuint WIDTH = 720, HEIGHT = 720;
 
 int main()
 {
@@ -63,7 +62,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         //render objects
-        display.update();
+        display.update(window);
 
         //catch errors
         GLenum err;
