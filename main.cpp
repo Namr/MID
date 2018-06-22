@@ -3,6 +3,8 @@
 
 #include <tiffio.h>
 #include <iostream>
+#include <vector>
+#include <filesystem>
 
 #include "MID.h"
 #include "display.hpp"
@@ -11,9 +13,53 @@
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
-
-int main()
+int main(int argc, char **argv)
 {
+
+    //compression mode
+    if (argc == 2 && std::string(argv[1]) == "-c")
+    {
+        //find and store all tiff file paths in selected directory
+        std::vector<std::filesystem::path> imageList;
+        std::string path = "D:/171002_R_0-148NA_zoom0-8X_whole_15-40-40";
+        for (auto &p : std::filesystem::directory_iterator(path))
+            imageList.push_back(p);
+
+        //find microscope image details
+        int height = 0;
+        int width = 0;
+        int depth = imageList.size();
+        int colorspace = 0;
+        TIFF *temp = TIFFOpen(imageList[0].string().c_str(), "r");
+        if (temp)
+        {
+            TIFFGetField(temp, TIFFTAG_IMAGEWIDTH, &width);
+            TIFFGetField(temp, TIFFTAG_IMAGELENGTH, &height);
+            TIFFGetField(temp, TIFFTAG_PHOTOMETRIC, &colorspace);
+
+            TIFFClose(temp);
+        }
+
+        std::cout << "Height: " << height << " Width: " << width << " Depth: " << depth << " ColorSpace: " << colorspace << std::endl;
+
+        //create a compressed version of the entire data to provide an overview image
+        int ratio = 5;
+        TIFF *overviewImage = TIFFOpen("overview.tif", "w");
+        if (overviewImage)
+        {
+            for (int i = 0; i < depth / ratio; i++)
+            {
+                std::vector<TIFF *> cachedImages;
+                for (int w = 0; w < cachedImages.size(); w++)
+                {
+                    TIFF *image = TIFFOpen(imageList[(i * 5) + w].string().c_str(), "r");
+                    cachedImages.push_back(image);
+                }
+                
+            }
+        }
+    }
+
     // Init GLFW and Set all the required options
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
