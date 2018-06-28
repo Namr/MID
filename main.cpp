@@ -13,51 +13,127 @@
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
+void resizeTIFF(std::string path)
+{
+    //find and store all tiff file paths in selected directory
+    std::vector<std::filesystem::path> imageList;
+    for (auto &p : std::filesystem::directory_iterator(path))
+        imageList.push_back(p);
+
+    //find microscope image details (width, height, depth, and colorspace)
+    int height = 0;
+    int width = 0;
+    int depth = imageList.size();
+    int colorspace = 0;
+    TIFF *temp = TIFFOpen(imageList[0].string().c_str(), "r");
+    if (temp)
+    {
+        TIFFGetField(temp, TIFFTAG_IMAGEWIDTH, &width);
+        TIFFGetField(temp, TIFFTAG_IMAGELENGTH, &height);
+        TIFFGetField(temp, TIFFTAG_PHOTOMETRIC, &colorspace);
+
+        TIFFClose(temp);
+    }
+
+    std::cout << "Height: " << height << " Width: " << width << " Depth: " << depth << " ColorSpace: " << colorspace << std::endl;
+
+    //create a compressed version of the entire data to provide an overview image
+    int ratio = 5;
+    TIFF *overviewImage = TIFFOpen("overview.tif", "w");
+
+    if (overviewImage)
+    {
+        for (int i = 0; i < depth / ratio; i++)
+        {
+            //read 5(or whatever the ratio is) images fully into memory to compress them into a single image
+            std::vector<int *> cachedImages;
+            
+            for (int w = 0; w < ratio; w++)
+            {
+                TIFF *image = TIFFOpen(imageList[(i * ratio) + w].string().c_str(), "r");
+                if (image)
+                {
+                    uint16_t *buf;
+                    uint32 row;
+                    uint32 col;
+
+                    int *raster = new int[height * width];
+                    buf = (uint16_t *)_TIFFmalloc(width * sizeof(uint16_t));
+
+                    for (row = 0; row < height; row++)
+                    {
+                        TIFFReadScanline(image, (tdata_t)buf, row);
+                        for (col = 0; col < width; col++)
+                            raster[(row * width) + col] = buf[col];
+                    }
+                    
+                    cachedImages.push_back(raster);
+                    _TIFFfree((tdata_t)buf);
+                    TIFFClose(image);
+                }
+                else
+                    std::cout << "ERROR: IMAGE UNABLE TO LOAD" << std::endl;
+            }
+            
+            
+            //after the images are cached make a new page in the new TIFF and fill it with the averaged information
+            TIFFSetField(overviewImage, TIFFTAG_IMAGEWIDTH, (width / ratio));
+            TIFFSetField(overviewImage, TIFFTAG_IMAGELENGTH, (height / ratio));
+            TIFFSetField(overviewImage, TIFFTAG_SAMPLESPERPIXEL, 1);
+            TIFFSetField(overviewImage, TIFFTAG_BITSPERSAMPLE, 16);
+            TIFFSetField(overviewImage, TIFFTAG_ROWSPERSTRIP, height);
+            TIFFSetField(overviewImage, TIFFTAG_ORIENTATION, (int)ORIENTATION_RIGHTTOP);
+            TIFFSetField(overviewImage, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+            TIFFSetField(overviewImage, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+            TIFFSetField(overviewImage, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+
+            TIFFSetField(overviewImage, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+            TIFFSetField(overviewImage, TIFFTAG_PAGENUMBER, i, (depth / ratio));
+
+            //iterate over this pages pixels in the new images in order to calculate them
+            for (int y = 0; y < (height / ratio); y++)
+            {
+                uint16_t *buf = new uint16_t[(width / ratio)];
+
+                for(int x = 0; x < (width / ratio); x++)
+                {
+                    int averaged_value = 0;
+                    //iterate over the 5x5x5 area in the original image that corresponds to the pixel in the compressed version and average all of those pixels
+                    for(int layer = 0; layer < ratio; layer++)
+                    {
+                        for(int w = 0; w < ratio; w++)
+                        {
+                            for(int v = 0; v < ratio; v++)
+                            {
+                                averaged_value += cachedImages.at(layer)[((x + w) * width * ratio) + (y * ratio) + v];
+                            }
+                        }
+                    }
+                    averaged_value /= (int) pow(ratio, 3);
+                    buf[x] = averaged_value;
+                }
+                TIFFWriteScanline(overviewImage, buf, y);
+            }
+            TIFFWriteDirectory(overviewImage);
+
+            //free the data that was in the cache
+            for(int layer = 0; layer < ratio; layer++)
+            {
+                free(cachedImages.at(layer));
+            }
+            std::cout << (i / (float) (depth / ratio)) * 100.0f << "%" << std::endl;
+        }
+    }
+    TIFFClose(overviewImage);
+}
+
 int main(int argc, char **argv)
 {
 
     //compression mode
     if (argc == 2 && std::string(argv[1]) == "-c")
     {
-        //find and store all tiff file paths in selected directory
-        std::vector<std::filesystem::path> imageList;
-        std::string path = "D:/171002_R_0-148NA_zoom0-8X_whole_15-40-40";
-        for (auto &p : std::filesystem::directory_iterator(path))
-            imageList.push_back(p);
-
-        //find microscope image details
-        int height = 0;
-        int width = 0;
-        int depth = imageList.size();
-        int colorspace = 0;
-        TIFF *temp = TIFFOpen(imageList[0].string().c_str(), "r");
-        if (temp)
-        {
-            TIFFGetField(temp, TIFFTAG_IMAGEWIDTH, &width);
-            TIFFGetField(temp, TIFFTAG_IMAGELENGTH, &height);
-            TIFFGetField(temp, TIFFTAG_PHOTOMETRIC, &colorspace);
-
-            TIFFClose(temp);
-        }
-
-        std::cout << "Height: " << height << " Width: " << width << " Depth: " << depth << " ColorSpace: " << colorspace << std::endl;
-
-        //create a compressed version of the entire data to provide an overview image
-        int ratio = 5;
-        TIFF *overviewImage = TIFFOpen("overview.tif", "w");
-        if (overviewImage)
-        {
-            for (int i = 0; i < depth / ratio; i++)
-            {
-                std::vector<TIFF *> cachedImages;
-                for (int w = 0; w < cachedImages.size(); w++)
-                {
-                    TIFF *image = TIFFOpen(imageList[(i * 5) + w].string().c_str(), "r");
-                    cachedImages.push_back(image);
-                }
-                
-            }
-        }
+        resizeTIFF("D:/171002_R_0-148NA_zoom0-8X_whole_15-40-40");
     }
 
     // Init GLFW and Set all the required options
