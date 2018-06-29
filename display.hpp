@@ -24,7 +24,7 @@ class Display
     void resize();
     Rectangle position;
     Rectangle textureCoords;
-    int layer = 2;
+    int layer = 100;
     float zoom = 1.0f;
     float xOffset = 0.0f;
     float yOffset = 0.0f;

@@ -12,6 +12,10 @@
 #include "parsers/tiffgl.hpp"
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+int curlayer = 0;
+int upperLayer = 0;
 
 void resizeTIFF(std::string path)
 {
@@ -152,6 +156,7 @@ int main(int argc, char **argv)
 
     // Set the required callback functions
     glfwSetKeyCallback(window, key_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     // Initialize GLEW and set it to use modern OpenGL
     glewExperimental = GL_TRUE;
@@ -165,6 +170,8 @@ int main(int argc, char **argv)
     //NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
     TiffGL file("C:/Users/vrdem/Documents/GitHub/MID/build/Debug/overview.tif");
     Display display(-1.0f, 1.0f);
+
+    upperLayer = file.depth;
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -181,6 +188,7 @@ int main(int argc, char **argv)
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        display.layer = curlayer;
         //render objects
         display.update(window);
 
@@ -203,4 +211,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     std::cout << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if(curlayer + yoffset >= 0 || curlayer + yoffset <= upperLayer)
+        curlayer += yoffset;
 }

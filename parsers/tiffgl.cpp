@@ -29,6 +29,7 @@ TiffGL::TiffGL(std::string filepath)
                 for (int col = 0; col < width; col++)
                     data[(layer * width * height) + (row * width) + col] = buf[col];
             }
+            TIFFReadDirectory(image);
         }
 
         _TIFFfree((tdata_t)buf);
