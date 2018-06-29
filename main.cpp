@@ -46,27 +46,23 @@ void resizeTIFF(std::string path)
         for (int i = 0; i < (depth / ratio); i++)
         {
             //read 5(or whatever the ratio is) images fully into memory to compress them into a single image
-            std::vector<int *> cachedImages;
-            
+            std::vector<uint16_t *> cachedImages;
+
             for (int w = 0; w < ratio; w++)
             {
                 TIFF *image = TIFFOpen(imageList[(i * ratio) + w].string().c_str(), "r");
                 if (image)
                 {
-                    uint16_t *buf;
-                    uint32 row;
-                    uint32 col;
+                    uint16_t *buf = (uint16_t *)_TIFFmalloc(width * sizeof(uint16_t));
+                    uint16_t *raster = new uint16_t[height * width];
 
-                    int *raster = new int[height * width];
-                    buf = (uint16_t *)_TIFFmalloc(width * sizeof(uint16_t));
-
-                    for (row = 0; row < height; row++)
+                    for (int row = 0; row < height; row++)
                     {
                         TIFFReadScanline(image, (tdata_t)buf, row);
-                        for (col = 0; col < width; col++)
+                        for (int col = 0; col < width; col++)
                             raster[(row * width) + col] = buf[col];
                     }
-                    
+
                     cachedImages.push_back(raster);
                     _TIFFfree((tdata_t)buf);
                     TIFFClose(image);
@@ -74,15 +70,14 @@ void resizeTIFF(std::string path)
                 else
                     std::cout << "ERROR: IMAGE UNABLE TO LOAD" << std::endl;
             }
-            
-            
+
             //after the images are cached make a new page in the new TIFF and fill it with the averaged information
             TIFFSetField(overviewImage, TIFFTAG_IMAGEWIDTH, (width / ratio));
             TIFFSetField(overviewImage, TIFFTAG_IMAGELENGTH, (height / ratio));
             TIFFSetField(overviewImage, TIFFTAG_SAMPLESPERPIXEL, 1);
             TIFFSetField(overviewImage, TIFFTAG_BITSPERSAMPLE, 16);
             TIFFSetField(overviewImage, TIFFTAG_ROWSPERSTRIP, height);
-            TIFFSetField(overviewImage, TIFFTAG_ORIENTATION, (int)ORIENTATION_RIGHTTOP);
+            TIFFSetField(overviewImage, TIFFTAG_ORIENTATION, (int)ORIENTATION_TOPLEFT);
             TIFFSetField(overviewImage, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
             TIFFSetField(overviewImage, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
             TIFFSetField(overviewImage, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
@@ -95,21 +90,21 @@ void resizeTIFF(std::string path)
             {
                 uint16_t *buf = new uint16_t[(width / ratio)];
 
-                for(int x = 0; x < (width / ratio); x++)
+                for (int x = 0; x < (width / ratio); x++)
                 {
                     int averaged_value = 0;
                     //iterate over the 5x5x5 area in the original image that corresponds to the pixel in the compressed version and average all of those pixels
-                    for(int layer = 0; layer < ratio; layer++)
+                    for (int layer = 0; layer < ratio; layer++)
                     {
-                        for(int w = 0; w < ratio; w++)
+                        for (int w = 0; w < ratio; w++)
                         {
-                            for(int v = 0; v < ratio; v++)
+                            for (int v = 0; v < ratio; v++)
                             {
-                                averaged_value += cachedImages.at(layer)[((x + w) * width * ratio) + (y * ratio) + v];
+                                averaged_value += cachedImages.at(layer)[(y * width * ratio) + w + (x * ratio + v)];
                             }
                         }
                     }
-                    averaged_value /= (int) pow(ratio, 3);
+                    averaged_value /= (int)pow(ratio, 3);
                     buf[x] = averaged_value;
                 }
                 TIFFWriteScanline(overviewImage, buf, y);
@@ -117,11 +112,11 @@ void resizeTIFF(std::string path)
             TIFFWriteDirectory(overviewImage);
 
             //free the data that was in the cache
-            for(int layer = 0; layer < ratio; layer++)
+            for (int layer = 0; layer < ratio; layer++)
             {
                 free(cachedImages.at(layer));
             }
-            std::cout << (i / (float) (depth / ratio)) * 100.0f << "%" << std::endl;
+            std::cout << (i / (float)(depth / ratio)) * 100.0f << "%" << std::endl;
         }
     }
     TIFFClose(overviewImage);
