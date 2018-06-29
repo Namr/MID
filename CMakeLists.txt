@@ -17,6 +17,6 @@ find_package(TIFF REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR} ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS})
 
-add_executable(MID main.cpp display.cpp  rectangle.cpp parsers/nifti.cpp)
+add_executable(MID main.cpp display.cpp  rectangle.cpp parsers/nifti.cpp parsers/tiffgl.cpp)
 
 target_link_libraries(MID ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} glfw ${TIFF_LIBRARIES})

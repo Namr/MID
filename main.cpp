@@ -9,7 +9,7 @@
 #include "MID.h"
 #include "display.hpp"
 #include "parsers/nifti.hpp"
-
+#include "parsers/tiffgl.hpp"
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
@@ -162,7 +162,8 @@ int main(int argc, char **argv)
     }
 
     //image view initilization
-    NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
+    //NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
+    TiffGL file("C:/Users/vrdem/Documents/GitHub/MID/build/Debug/overview.tif");
     Display display(-1.0f, 1.0f);
 
     // Game loop
