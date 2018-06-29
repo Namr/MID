@@ -43,7 +43,7 @@ void resizeTIFF(std::string path)
 
     if (overviewImage)
     {
-        for (int i = 0; i < depth / ratio; i++)
+        for (int i = 0; i < (depth / ratio); i++)
         {
             //read 5(or whatever the ratio is) images fully into memory to compress them into a single image
             std::vector<int *> cachedImages;
@@ -134,6 +134,8 @@ int main(int argc, char **argv)
     if (argc == 2 && std::string(argv[1]) == "-c")
     {
         resizeTIFF("D:/171002_R_0-148NA_zoom0-8X_whole_15-40-40");
+        std::cout << "Compression Complete" << std::endl;
+        return 0;
     }
 
     // Init GLFW and Set all the required options
