@@ -5,7 +5,11 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <filesystem>
 #include <tiffio.h>
+
+#include "rectangle.h"
 
 class TiffGL
 {
@@ -15,6 +19,8 @@ class TiffGL
     int height = 0;
     uint16_t *data;
     GLuint texture;
+    GLuint subTexture;
     TiffGL(std::string filepath);
+    void getRegion(Rectangle pixelCoords, int layer);
 };
 #endif

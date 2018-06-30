@@ -171,6 +171,8 @@ int main(int argc, char **argv)
     TiffGL file("C:/Users/vrdem/Documents/GitHub/MID/build/Debug/overview.tif");
     Display display(-1.0f, 1.0f);
 
+    display.image = &file;
+
     upperLayer = file.depth;
 
     // Game loop
@@ -216,5 +218,5 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if(curlayer + yoffset >= 0 || curlayer + yoffset <= upperLayer)
-        curlayer += yoffset;
+        curlayer += (int) yoffset;
 }

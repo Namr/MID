@@ -8,6 +8,7 @@
 #include "MID.h"
 #include "parsers/nifti.hpp"
 #include "rectangle.h"
+#include "parsers/tiffgl.hpp"
 
 class Display
 {
@@ -15,8 +16,9 @@ class Display
     GLuint loadShader(const char *filepath, GLenum type);
     GLuint shaderProgram, texture;
     GLuint triangles[6];
-    float vertices[16];
+    float vertices[24];
     int highlighting = 0;
+    float detailMix = 0.0f;
     Rectangle highlighter;
   public:
     Display(float tlX, float tlY);
@@ -24,10 +26,10 @@ class Display
     void resize();
     Rectangle position;
     Rectangle textureCoords;
-    int layer = 100;
-    float zoom = 1.0f;
-    float xOffset = 0.0f;
-    float yOffset = 0.0f;
+    Rectangle pixelCoords;
+    Rectangle standardTextureCoords;
+    TiffGL *image;
+    int layer = 0;
 };
 
 #endif
