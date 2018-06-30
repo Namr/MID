@@ -47,6 +47,8 @@ TiffGL::TiffGL(std::string filepath)
         //upload data, the 0s are specifiying to start the upload from the very start of the data
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, depth, GL_RED, GL_UNSIGNED_SHORT, data);
 
+        free(data);
+
         //Set Texture Parameters
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -67,28 +69,33 @@ void TiffGL::getRegion(Rectangle pixelCoords, int layer)
     TIFF *image = TIFFOpen(imageList[layer].string().c_str(), "r");
     if (image)
     {
-        int height = abs(pixelCoords.tl.y - pixelCoords.bl.y);
-        int width = abs(pixelCoords.tl.x - pixelCoords.tr.x);
-
+        //height and width of the selected area IN THE ORIGINAL IMAGES PIXEL COORDINATES
+        int height = (int) abs((int) pixelCoords.tl.y - (int) pixelCoords.bl.y);
+        int width = (int) abs((int) pixelCoords.tl.x - (int) pixelCoords.tr.x);
+        
+        //original length of the image
         int length = 0;
         TIFFGetField(image, TIFFTAG_IMAGELENGTH, &length);
 
+        //the buffer is the size of a row in the original image, however the raster is the size of the selected area (its the image to be displayed)
         uint16_t *buf = (uint16_t *)_TIFFmalloc(length * sizeof(uint16_t));
         uint16_t *raster = new uint16_t[height * width];
-
+        
+        
+        //iterate over every pixel in the original image that corresponds to the selected area and put it in the raster
         int y = 0;
-        for (int row = pixelCoords.tl.y; row < pixelCoords.bl.y; row++)
+        for (int row = (int) pixelCoords.tl.y; row < (int) pixelCoords.bl.y; row++)
         {
             TIFFReadScanline(image, (tdata_t)buf, row);
             int x = 0;
-            for (int col = pixelCoords.tl.x; col < pixelCoords.tr.x; col++)
+            for (int col = (int) pixelCoords.tl.x; col < (int) pixelCoords.tr.x; col++)
             {
                 raster[(y * width) + x] = buf[col];
                 x++;
             }
             y++;
         }
-
+        
         _TIFFfree((tdata_t)buf);
         TIFFClose(image);
 
@@ -101,6 +108,8 @@ void TiffGL::getRegion(Rectangle pixelCoords, int layer)
 
         //upload data, the 0s are specifiying to start the upload from the very start of the data
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_UNSIGNED_SHORT, raster);
+
+        free(raster);
 
         //Set Texture Parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
