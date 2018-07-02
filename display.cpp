@@ -173,10 +173,10 @@ void Display::update(GLFWwindow *window)
         textureCoords = highlighter;
 
         //find the pixel space coordiantes for the current zoom box
-        pixelCoords.tl.x = map(highlighter.tl.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, image->width * 5);
-        pixelCoords.tl.y = map(highlighter.tl.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, image->height * 5);
-        pixelCoords.br.x = map(highlighter.br.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, image->width * 5);
-        pixelCoords.br.y = map(highlighter.br.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, image->height * 5);
+        pixelCoords.tl.x = map(highlighter.tl.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, (float)image->width * 5);
+        pixelCoords.tl.y = map(highlighter.tl.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, (float)image->height * 5);
+        pixelCoords.br.x = map(highlighter.br.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, (float)image->width * 5);
+        pixelCoords.br.y = map(highlighter.br.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, (float)image->height * 5);
         pixelCoords = Rectangle(pixelCoords.tl, pixelCoords.br);
 
         image->getRegion(pixelCoords, layer * 5);
@@ -187,6 +187,15 @@ void Display::update(GLFWwindow *window)
 
         resize();
         highlighting = 0;
+    }
+
+    //reset zoom and pan of the image to go back to top level view
+    int reset = glfwGetKey(window, GLFW_KEY_R);
+    if (reset == GLFW_PRESS)
+    {
+        detailMix = 0.0f;
+        textureCoords = Rectangle(Vertex(0.0, 0.0), Vertex(1.0, 1.0));
+        resize();
     }
 
     glActiveTexture(GL_TEXTURE0);

@@ -38,7 +38,6 @@ TiffGL::TiffGL(std::string filepath)
         //generate the buffers for the texture data which will be supplied by another function
         glActiveTexture(GL_TEXTURE0);
         glGenTextures(1, &texture);
-        glGenTextures(1, &subTexture);
         glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 
         //allocate memory for the incoming data
@@ -101,6 +100,8 @@ void TiffGL::getRegion(Rectangle pixelCoords, int layer)
 
         //generate the buffers for the texture data which will be supplied by another function
         glActiveTexture(GL_TEXTURE1);
+        glDeleteTextures(1, &subTexture);
+        glGenTextures(1, &subTexture);
         glBindTexture(GL_TEXTURE_2D, subTexture);
 
         //allocate memory for the incoming data
