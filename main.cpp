@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
     //image view initilization
     //NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
-    TiffGL file("C:/Users/vrdem/Documents/GitHub/MID/build/Debug/overview.tif");
+    TiffGL file("overview.tif");
     Display display(-1.0f, 1.0f);
 
     display.image = &file;
