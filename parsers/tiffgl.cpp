@@ -38,21 +38,21 @@ TiffGL::TiffGL(std::string filepath)
         //generate the buffers for the texture data which will be supplied by another function
         glActiveTexture(GL_TEXTURE0);
         glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+        glBindTexture(GL_TEXTURE_3D, texture);
 
         //allocate memory for the incoming data
-        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R16, width, height, depth);
+        glTexStorage3D(GL_TEXTURE_3D, 1, GL_R16, width, height, depth);
 
         //upload data, the 0s are specifiying to start the upload from the very start of the data
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, depth, GL_RED, GL_UNSIGNED_SHORT, data);
+        glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, width, height, depth, GL_RED, GL_UNSIGNED_SHORT, data);
 
         free(data);
 
         //Set Texture Parameters
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
     else
         std::cout << "ERROR: IMAGE UNABLE TO LOAD" << std::endl;

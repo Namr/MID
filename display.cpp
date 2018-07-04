@@ -204,7 +204,7 @@ void Display::update(GLFWwindow *window)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glUniform1i(glGetUniformLocation(shaderProgram, "layer"), layer);
+    glUniform1f(glGetUniformLocation(shaderProgram, "layer"), (float) layer / image->depth);
     glUniform1f(glGetUniformLocation(shaderProgram, "detailMix"), detailMix);
 
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
