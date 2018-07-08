@@ -7,8 +7,22 @@
 #include <iostream>
 #include "MID.h"
 #include "parsers/nifti.hpp"
-#include "rectangle.h"
+#include "rectangle.hpp"
 #include "parsers/tiffgl.hpp"
+
+class ScreenObject
+{
+public:
+  Rectangle pixelSpace;
+  Rectangle screenSpace;
+  Rectangle textureSpace;
+  Rectangle relativeSpace;
+
+  ScreenObject(Rectangle pixel);
+  ScreenObject();
+  void setTextureSpace(Rectangle reference);
+  void setRelativeSpace(Rectangle reference);
+};
 
 class Display
 {
@@ -19,9 +33,10 @@ class Display
     float vertices[24];
     int highlighting = 0;
     float detailMix = 0.0f;
-    Rectangle highlighter;
+    int view;
+    ScreenObject highlighter;
   public:
-    Display(float tlX, float tlY);
+    Display(float tlX, float tlY, int orientation);
     void update(GLFWwindow* window);
     void resize();
     Rectangle position;

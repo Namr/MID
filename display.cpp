@@ -6,8 +6,10 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 }
 
 //ARGUEMENTS: The cordinates of the top left vertex of the dispaly
-Display::Display(float tlX, float tlY)
+Display::Display(float tlX, float tlY, int orientation)
 {
+    view = orientation;
+
     //generate vertex position, and texture coords based on the top left cordinates
     position = Rectangle(Vertex(tlX, tlY), Vertex(tlX + 1.0f, tlY - 1.0f));
     textureCoords = Rectangle(Vertex(0.0, 0.0), Vertex(1.0, 1.0));
@@ -142,50 +144,47 @@ void Display::update(GLFWwindow *window)
 {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    //covert cursor position to screen space (normalized coords between -1 and 1)
-    xpos = map((float)xpos, 0.0f, WIDTH, -1.0f, 1.0f);
-    ypos = map((float)ypos, 0.0f, HEIGHT, 1.0f, -1.0f);
-
-    /*
-    find the vertical and horizontal distances between the top left corner of the display
-    and the cursor, this distances is the same as the cursors local position on the display,
-    however since the display is smaller than the screen, the bounds are position indifferent
-    but not scale indifferent so they must be multiplied up to become normalized coordinates
-    */
-    xpos = std::abs(xpos - position.tl.x);
-    ypos = std::abs(ypos - position.tl.y);
 
     int mouse0 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     if (mouse0 == GLFW_PRESS && highlighting == 0)
     {
-        highlighter = Rectangle();
-        highlighter.tl.x = map((float)xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
-        highlighter.tl.y = map((float)ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+        highlighter.pixelSpace.tl.x = (float)xpos;
+        highlighter.pixelSpace.tl.y = (float)ypos;
+
         highlighting = 1;
     }
     if (mouse0 == GLFW_RELEASE && highlighting == 1)
     {
-        highlighter.br.x = map((float)xpos, 0.0f, 1.0f, textureCoords.bl.x, textureCoords.br.x);
-        highlighter.br.y = map((float)ypos, 0.0f, 1.0f, textureCoords.tr.y, textureCoords.br.y);
+        highlighter.pixelSpace.br.x = (float)xpos;
+        highlighter.pixelSpace.br.y = (float)ypos;
 
-        highlighter = Rectangle(highlighter.tl, highlighter.br);
+        highlighter.pixelSpace = Rectangle(highlighter.pixelSpace.tl, highlighter.pixelSpace.br);
 
-        textureCoords = highlighter;
+        highlighter = ScreenObject(highlighter.pixelSpace);
+        highlighter.setRelativeSpace(position);
+        highlighter.setTextureSpace(textureCoords);
 
-        //find the pixel space coordiantes for the current zoom box
-        pixelCoords.tl.x = map(highlighter.tl.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, (float)image->width * 5);
-        pixelCoords.tl.y = map(highlighter.tl.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, (float)image->height * 5);
-        pixelCoords.br.x = map(highlighter.br.x, standardTextureCoords.bl.x, standardTextureCoords.br.x, 0.0f, (float)image->width * 5);
-        pixelCoords.br.y = map(highlighter.br.y, standardTextureCoords.tr.y, standardTextureCoords.br.y, 0.0f, (float)image->height * 5);
-        pixelCoords = Rectangle(pixelCoords.tl, pixelCoords.br);
+        if (highlighter.screenSpace.intersect(position) == 1)
+        {
+            textureCoords = highlighter.textureSpace;
 
-        image->getRegion(pixelCoords, layer * 5);
-        detailMix = 1.0f;
+            //find the pixel space coordiantes for the current zoom box
+            pixelCoords.tl.x = map(highlighter.relativeSpace.tl.x, 0.0f, 1.0f, 0.0f, (float)image->origin_width);
+            pixelCoords.tl.y = map(highlighter.relativeSpace.tl.y, 0.0f, 1.0f, 0.0f, (float)image->origin_height);
+            pixelCoords.br.x = map(highlighter.relativeSpace.br.x, 0.0f, 1.0f, 0.0f, (float)image->origin_width);
+            pixelCoords.br.y = map(highlighter.relativeSpace.br.y, 0.0f, 1.0f, 0.0f, (float)image->origin_height);
 
-        glActiveTexture(GL_TEXTURE1);
-        glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1);
+            pixelCoords = Rectangle(pixelCoords.tl, pixelCoords.br);
 
-        resize();
+            image->getRegion(pixelCoords, layer * 5);
+            detailMix = 1.0f;
+
+            glActiveTexture(GL_TEXTURE1);
+            glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1);
+
+            resize();
+        }
+
         highlighting = 0;
     }
 
@@ -204,8 +203,9 @@ void Display::update(GLFWwindow *window)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glUniform1f(glGetUniformLocation(shaderProgram, "layer"), (float) layer / image->depth);
+    glUniform1f(glGetUniformLocation(shaderProgram, "layer"), (float)layer / image->depth);
     glUniform1f(glGetUniformLocation(shaderProgram, "detailMix"), detailMix);
+    glUniform1i(glGetUniformLocation(shaderProgram, "view"), view);
 
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
@@ -245,4 +245,40 @@ GLuint Display::loadShader(const char *filepath, GLenum type)
     glShaderSource(shader, 1, (const char *const *)&buffer, (GLint *)&len);
     free(buffer);
     return shader;
+}
+
+ScreenObject::ScreenObject() {}
+
+ScreenObject::ScreenObject(Rectangle pixel)
+{
+    pixelSpace = pixel;
+
+    screenSpace.tl.x = map(pixelSpace.tl.x, 0.0f, WIDTH, -1.0f, 1.0f);
+    screenSpace.tl.y = map(pixelSpace.tl.y, 0.0f, HEIGHT, 1.0f, -1.0f);
+    screenSpace.br.x = map(pixelSpace.br.x, 0.0f, WIDTH, -1.0f, 1.0f);
+    screenSpace.br.y = map(pixelSpace.br.y, 0.0f, HEIGHT, 1.0f, -1.0f);
+
+    screenSpace = Rectangle(screenSpace.tl, screenSpace.br);
+}
+
+void ScreenObject::setRelativeSpace(Rectangle reference)
+{
+    relativeSpace.tl.x = std::abs(screenSpace.tl.x - reference.tl.x);
+    relativeSpace.tl.y = std::abs(screenSpace.tl.y - reference.tl.y);
+
+    relativeSpace.br.x = std::abs(screenSpace.br.x - reference.tl.x);
+    relativeSpace.br.y = std::abs(screenSpace.br.y - reference.tl.y);
+
+    relativeSpace = Rectangle(relativeSpace.tl, relativeSpace.br);
+}
+
+void ScreenObject::setTextureSpace(Rectangle reference)
+{
+
+    textureSpace.tl.x = map(relativeSpace.tl.x, 0.0f, 1.0f, reference.bl.x, reference.br.x);
+    textureSpace.tl.y = map(relativeSpace.tl.y, 0.0f, 1.0f, reference.tr.y, reference.br.y);
+    textureSpace.br.x = map(relativeSpace.br.x, 0.0f, 1.0f, reference.bl.x, reference.br.x);
+    textureSpace.br.y = map(relativeSpace.br.y, 0.0f, 1.0f, reference.tr.y, reference.br.y);
+
+    textureSpace = Rectangle(textureSpace.tl, textureSpace.br);
 }

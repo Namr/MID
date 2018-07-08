@@ -10,6 +10,7 @@
 #include "display.hpp"
 #include "parsers/nifti.hpp"
 #include "parsers/tiffgl.hpp"
+
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -169,9 +170,13 @@ int main(int argc, char **argv)
     //image view initilization
     //NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
     TiffGL file("overview.tif");
-    Display display(-1.0f, 1.0f);
+    Display topLeft(-1.0f, 1.0f, 0);
+    //Display topRight(0.0f, 1.0f, 1);
+    //Display bottomLeft(-1.0f, 0.0f, 2);
 
-    display.image = &file;
+    topLeft.image = &file;
+    //topRight.image = &file;
+    //bottomLeft.image = &file;
 
     upperLayer = file.depth;
 
@@ -190,9 +195,14 @@ int main(int argc, char **argv)
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        display.layer = curlayer;
+        topLeft.layer = curlayer;
+        //topRight.layer = curlayer;
+        //bottomLeft.layer = curlayer;
+        
         //render objects
-        display.update(window);
+        topLeft.update(window);
+        //topRight.update(window);
+        //bottomLeft.update(window);
 
         //catch errors
         GLenum err;

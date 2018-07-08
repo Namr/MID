@@ -1,6 +1,8 @@
 #ifndef RECTANGLE_H
 #define RECTANGLE_H
 
+#include <cstdlib>
+
 class Vertex
 {
   public:
@@ -15,6 +17,7 @@ class Rectangle
     Vertex tl, tr, bl, br;
     Rectangle(Vertex topLeft, Vertex bottomRight);
     Rectangle();
+    int intersect(Rectangle rect);
 };
 
 #endif

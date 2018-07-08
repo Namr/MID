@@ -1,8 +1,8 @@
-#include "rectangle.h"
+#include "rectangle.hpp"
 
 Vertex::Vertex(float xCoord, float yCoord)
 {
-    x = xCoord; 
+    x = xCoord;
     y = yCoord;
 }
 
@@ -23,5 +23,18 @@ Rectangle::Rectangle(Vertex topLeft, Vertex bottomRight)
 
 Rectangle::Rectangle()
 {
-    
+}
+
+//returns 1 if collision detected, returns 0 if they do not collide
+int Rectangle::intersect(Rectangle rect)
+{
+    if (tl.x < rect.br.x && br.x > rect.tl.x &&
+        tl.y > rect.br.y && br.y < rect.tl.y)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }

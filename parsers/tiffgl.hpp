@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <tiffio.h>
 
-#include "rectangle.h"
+#include "rectangle.hpp"
 
 class TiffGL
 {
@@ -17,6 +17,10 @@ class TiffGL
     int depth = 0;
     int width = 0;
     int height = 0;
+    std::vector<std::filesystem::path> imageList;
+    int origin_depth = 0;
+    int origin_width = 0;
+    int origin_height = 0;
     uint16_t *data;
     GLuint texture;
     GLuint subTexture;
