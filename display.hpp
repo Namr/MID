@@ -28,7 +28,7 @@ class Display
 {
     unsigned int VAO, VBO, EBO;
     GLuint loadShader(const char *filepath, GLenum type);
-    GLuint shaderProgram, texture;
+    GLuint shaderProgram;
     GLuint triangles[6];
     float vertices[24];
     int highlighting = 0;

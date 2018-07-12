@@ -13,7 +13,7 @@
 
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
 int curlayer = 0;
 int upperLayer = 0;
@@ -167,16 +167,19 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    //set background color
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     //image view initilization
     //NIFTI file("C:/Users/vrdem/Documents/Ellie_Sarah_Top.nii");
     TiffGL file("overview.tif");
     Display topLeft(-1.0f, 1.0f, 0);
-    //Display topRight(0.0f, 1.0f, 1);
-    //Display bottomLeft(-1.0f, 0.0f, 2);
+    Display topRight(0.0f, 1.0f, 1);
+    Display bottomLeft(-1.0f, 0.0f, 2);
 
     topLeft.image = &file;
-    //topRight.image = &file;
-    //bottomLeft.image = &file;
+    topRight.image = &file;
+    bottomLeft.image = &file;
 
     upperLayer = file.depth;
 
@@ -192,17 +195,16 @@ int main(int argc, char **argv)
         glViewport(0, 0, width, height);
 
         //Clear the screen with a background color
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         topLeft.layer = curlayer;
-        //topRight.layer = curlayer;
-        //bottomLeft.layer = curlayer;
-        
+        topRight.layer = curlayer;
+        bottomLeft.layer = curlayer;
+
         //render objects
         topLeft.update(window);
-        //topRight.update(window);
-        //bottomLeft.update(window);
+        topRight.update(window);
+        bottomLeft.update(window);
 
         //catch errors
         GLenum err;
@@ -225,8 +227,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    if(curlayer + yoffset >= 0 || curlayer + yoffset <= upperLayer)
-        curlayer += (int) yoffset;
+    if (curlayer + yoffset >= 0 || curlayer + yoffset <= upperLayer)
+        curlayer += (int)yoffset;
 }

@@ -93,6 +93,9 @@ Display::Display(float tlX, float tlY, int orientation)
 
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureArray"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1);
 }
 
 void Display::resize()
@@ -145,6 +148,11 @@ void Display::update(GLFWwindow *window)
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
+    glUseProgram(shaderProgram);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
     int mouse0 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     if (mouse0 == GLFW_PRESS && highlighting == 0)
     {
@@ -163,7 +171,8 @@ void Display::update(GLFWwindow *window)
         highlighter = ScreenObject(highlighter.pixelSpace);
         highlighter.setRelativeSpace(position);
         highlighter.setTextureSpace(textureCoords);
-
+        highlighting = 0;
+        
         if (highlighter.screenSpace.intersect(position) == 1)
         {
             textureCoords = highlighter.textureSpace;
@@ -179,13 +188,8 @@ void Display::update(GLFWwindow *window)
             image->getRegion(pixelCoords, layer * 5);
             detailMix = 1.0f;
 
-            glActiveTexture(GL_TEXTURE1);
-            glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1);
-
             resize();
         }
-
-        highlighting = 0;
     }
 
     //reset zoom and pan of the image to go back to top level view
@@ -197,13 +201,20 @@ void Display::update(GLFWwindow *window)
         resize();
     }
 
-    glActiveTexture(GL_TEXTURE0);
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    glUniform1f(glGetUniformLocation(shaderProgram, "layer"), (float)layer / image->depth);
+    float sliceLayer;
+    switch (view)
+    {
+    case 0:
+        sliceLayer = (float)layer / image->depth;
+        break;
+    case 1:
+        sliceLayer = (float)layer / image->height;
+        break;
+    default:
+        sliceLayer = (float)layer / image->width;
+        break;
+    }
+    glUniform1f(glGetUniformLocation(shaderProgram, "layer"), sliceLayer);
     glUniform1f(glGetUniformLocation(shaderProgram, "detailMix"), detailMix);
     glUniform1i(glGetUniformLocation(shaderProgram, "view"), view);
 
