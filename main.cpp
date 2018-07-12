@@ -197,9 +197,9 @@ int main(int argc, char **argv)
         //Clear the screen with a background color
         glClear(GL_COLOR_BUFFER_BIT);
 
-        topLeft.layer = curlayer;
-        topRight.layer = curlayer;
-        bottomLeft.layer = curlayer;
+        topLeft.layer = (int)topRight.selectedPosition.y;
+        topRight.layer = (int)topLeft.selectedPosition.x;
+        bottomLeft.layer = (int)topLeft.selectedPosition.y;
 
         //render objects
         topLeft.update(window);

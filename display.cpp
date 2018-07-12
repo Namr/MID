@@ -177,6 +177,7 @@ void Display::update(GLFWwindow *window)
     }
 
     int mouse0 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    int mouse1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
     if (mouse0 == GLFW_PRESS && highlighting == 0)
     {
         highlighter.pixelSpace.tl.x = (float)xpos;
@@ -215,6 +216,25 @@ void Display::update(GLFWwindow *window)
         }
     }
 
+    if (mouse1 == GLFW_PRESS)
+    {
+        ScreenObject mousePos;
+
+        mousePos.pixelSpace.tl.x = (float)xpos;
+        mousePos.pixelSpace.tl.y = (float)ypos;
+        mousePos.pixelSpace.br.x = (float)xpos + 0.1;
+        mousePos.pixelSpace.br.y = (float)ypos + 0.1;
+        mousePos.pixelSpace = Rectangle(mousePos.pixelSpace.tl, mousePos.pixelSpace.br);
+        mousePos = ScreenObject(mousePos.pixelSpace);
+        mousePos.setRelativeSpace(position);
+        mousePos.setTextureSpace(textureCoords);
+
+        if (mousePos.screenSpace.intersect(position) == 1)
+        {
+            selectedPosition.x = map(mousePos.relativeSpace.tl.x, 0.0f, 1.0f, 0.0f, origin_width / 5);
+            selectedPosition.y = map(mousePos.relativeSpace.tl.y, 0.0f, 1.0f, 0.0f, origin_height / 5);
+        }
+    }
     //reset zoom and pan of the image to go back to top level view
     int reset = glfwGetKey(window, GLFW_KEY_R);
     if (reset == GLFW_PRESS)
