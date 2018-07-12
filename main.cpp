@@ -13,10 +13,6 @@
 
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-
-int curlayer = 0;
-int upperLayer = 0;
 
 void resizeTIFF(std::string path)
 {
@@ -157,7 +153,6 @@ int main(int argc, char **argv)
 
     // Set the required callback functions
     glfwSetKeyCallback(window, key_callback);
-    glfwSetScrollCallback(window, scroll_callback);
 
     // Initialize GLEW and set it to use modern OpenGL
     glewExperimental = GL_TRUE;
@@ -180,8 +175,6 @@ int main(int argc, char **argv)
     topLeft.image = &file;
     topRight.image = &file;
     bottomLeft.image = &file;
-
-    upperLayer = file.depth;
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -225,10 +218,4 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     std::cout << key << std::endl;
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-}
-
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
-    if (curlayer + yoffset >= 0 || curlayer + yoffset <= upperLayer)
-        curlayer += (int)yoffset;
 }
