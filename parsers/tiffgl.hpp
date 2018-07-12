@@ -23,8 +23,8 @@ class TiffGL
     int origin_height = 0;
     uint16_t *data;
     GLuint texture;
-    GLuint subTexture;
+    GLuint subTexture, subTexture1, subTexture2;
     TiffGL(std::string filepath);
-    void getRegion(Rectangle pixelCoords, int layer);
+    void getRegion(Rectangle pixelCoords, int layer, int view);
 };
 #endif

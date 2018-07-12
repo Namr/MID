@@ -94,8 +94,8 @@ Display::Display(float tlX, float tlY, int orientation)
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureArray"), 0);
 
-    glActiveTexture(GL_TEXTURE1);
-    glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1);
+    glActiveTexture(GL_TEXTURE1 + view);
+    glUniform1i(glGetUniformLocation(shaderProgram, "detail"), 1 + view);
 }
 
 void Display::resize()
@@ -153,6 +153,29 @@ void Display::update(GLFWwindow *window)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
+    float sliceLayer = 0;
+    float origin_width = 0;
+    float origin_height = 0;
+
+    switch (view)
+    {
+    case 0:
+        sliceLayer = (float)layer / image->depth;
+        origin_width = (float)image->origin_width;
+        origin_height = (float)image->origin_height;
+        break;
+    case 1:
+        sliceLayer = (float)layer / image->width;
+        origin_width = (float)image->origin_height;
+        origin_height = (float)image->origin_depth;
+        break;
+    default:
+        sliceLayer = (float)layer / image->height;
+        origin_width = (float)image->origin_width;
+        origin_height = (float)image->origin_depth;
+        break;
+    }
+
     int mouse0 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     if (mouse0 == GLFW_PRESS && highlighting == 0)
     {
@@ -172,20 +195,20 @@ void Display::update(GLFWwindow *window)
         highlighter.setRelativeSpace(position);
         highlighter.setTextureSpace(textureCoords);
         highlighting = 0;
-        
+
         if (highlighter.screenSpace.intersect(position) == 1)
         {
             textureCoords = highlighter.textureSpace;
 
             //find the pixel space coordiantes for the current zoom box
-            pixelCoords.tl.x = map(highlighter.relativeSpace.tl.x, 0.0f, 1.0f, 0.0f, (float)image->origin_width);
-            pixelCoords.tl.y = map(highlighter.relativeSpace.tl.y, 0.0f, 1.0f, 0.0f, (float)image->origin_height);
-            pixelCoords.br.x = map(highlighter.relativeSpace.br.x, 0.0f, 1.0f, 0.0f, (float)image->origin_width);
-            pixelCoords.br.y = map(highlighter.relativeSpace.br.y, 0.0f, 1.0f, 0.0f, (float)image->origin_height);
+            pixelCoords.tl.x = map(highlighter.relativeSpace.tl.x, 0.0f, 1.0f, 0.0f, origin_width);
+            pixelCoords.tl.y = map(highlighter.relativeSpace.tl.y, 0.0f, 1.0f, 0.0f, origin_height);
+            pixelCoords.br.x = map(highlighter.relativeSpace.br.x, 0.0f, 1.0f, 0.0f, origin_width);
+            pixelCoords.br.y = map(highlighter.relativeSpace.br.y, 0.0f, 1.0f, 0.0f, origin_height);
 
             pixelCoords = Rectangle(pixelCoords.tl, pixelCoords.br);
 
-            image->getRegion(pixelCoords, layer * 5);
+            image->getRegion(pixelCoords, layer * 5, view);
             detailMix = 1.0f;
 
             resize();
@@ -201,19 +224,6 @@ void Display::update(GLFWwindow *window)
         resize();
     }
 
-    float sliceLayer;
-    switch (view)
-    {
-    case 0:
-        sliceLayer = (float)layer / image->depth;
-        break;
-    case 1:
-        sliceLayer = (float)layer / image->height;
-        break;
-    default:
-        sliceLayer = (float)layer / image->width;
-        break;
-    }
     glUniform1f(glGetUniformLocation(shaderProgram, "layer"), sliceLayer);
     glUniform1f(glGetUniformLocation(shaderProgram, "detailMix"), detailMix);
     glUniform1i(glGetUniformLocation(shaderProgram, "view"), view);
