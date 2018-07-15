@@ -158,7 +158,7 @@ void TiffGL::getRegion(Rectangle pixelCoords, int layer, int view)
 
         uint16_t *buf = (uint16_t *)_TIFFmalloc(length * sizeof(uint16_t));
 
-        for (int row = 0; row < sliceSet.size(); row++)
+        for (unsigned int row = 0; row < sliceSet.size(); row++)
         {
             int x = 0;
             for (int col = (int)pixelCoords.tl.x; col < (int)pixelCoords.tr.x; col++)
@@ -217,7 +217,7 @@ void TiffGL::getRegion(Rectangle pixelCoords, int layer, int view)
 
         uint16_t *buf = (uint16_t *)_TIFFmalloc(length * sizeof(uint16_t));
 
-        for (int row = 0; row < sliceSet.size(); row++)
+        for (unsigned int row = 0; row < sliceSet.size(); row++)
         {
             int x = 0;
             TIFFReadScanline(sliceSet[row], (tdata_t)buf, layer);

@@ -22,6 +22,6 @@ void main()
         overview = vec4(texture(textureArray, vec3(layer, TexCoords.x, TexCoords.y)).rrr, 1.0);
     
     vec4 detail = vec4(texture(detail, StandardTexCoords).rrr, 1.0);
-    outColor = mix(overview, detail, detailMix);
+    outColor = mix(overview, detail, detailMix) * vec4(1.3, 1.3, 1.3, 1.0);
     //outColor = vec4(texture(textureArray, vec3(TexCoords.xy, layer)));
 }

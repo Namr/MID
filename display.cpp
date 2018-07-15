@@ -182,8 +182,25 @@ void Display::update(GLFWwindow *window)
     {
         highlighter.pixelSpace.tl.x = (float)xpos;
         highlighter.pixelSpace.tl.y = (float)ypos;
+        highlighter.pixelSpace.br.x = (float)xpos + 0.1f;
+        highlighter.pixelSpace.br.y = (float)ypos + 0.1f;
+
+        highlighter.pixelSpace = Rectangle(highlighter.pixelSpace.tl, highlighter.pixelSpace.br);
+        highlighter = ScreenObject(highlighter.pixelSpace);
+
+        highlighter.screenSpace.graphicsInit();
 
         highlighting = 1;
+    }
+    if (mouse0 == GLFW_PRESS && highlighting == 1)
+    {
+        highlighter.pixelSpace.br.x = (float)xpos;
+        highlighter.pixelSpace.br.y = (float)ypos;
+
+        highlighter.pixelSpace = Rectangle(highlighter.pixelSpace.tl, highlighter.pixelSpace.br);
+
+        highlighter.setScreenSpace(highlighter.pixelSpace);
+        highlighter.screenSpace.render();
     }
     if (mouse0 == GLFW_RELEASE && highlighting == 1)
     {
@@ -222,8 +239,8 @@ void Display::update(GLFWwindow *window)
 
         mousePos.pixelSpace.tl.x = (float)xpos;
         mousePos.pixelSpace.tl.y = (float)ypos;
-        mousePos.pixelSpace.br.x = (float)xpos + 0.1;
-        mousePos.pixelSpace.br.y = (float)ypos + 0.1;
+        mousePos.pixelSpace.br.x = (float)xpos + 0.1f;
+        mousePos.pixelSpace.br.y = (float)ypos + 0.1f;
         mousePos.pixelSpace = Rectangle(mousePos.pixelSpace.tl, mousePos.pixelSpace.br);
         mousePos = ScreenObject(mousePos.pixelSpace);
         mousePos.setRelativeSpace(position);
@@ -247,6 +264,11 @@ void Display::update(GLFWwindow *window)
     glUniform1f(glGetUniformLocation(shaderProgram, "layer"), sliceLayer);
     glUniform1f(glGetUniformLocation(shaderProgram, "detailMix"), detailMix);
     glUniform1i(glGetUniformLocation(shaderProgram, "view"), view);
+
+    glUseProgram(shaderProgram);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
@@ -300,6 +322,18 @@ ScreenObject::ScreenObject(Rectangle pixel)
     screenSpace.br.y = map(pixelSpace.br.y, 0.0f, HEIGHT, 1.0f, -1.0f);
 
     screenSpace = Rectangle(screenSpace.tl, screenSpace.br);
+}
+
+void ScreenObject::setScreenSpace(Rectangle pixel)
+{
+    pixelSpace = pixel;
+
+    screenSpace.tl.x = map(pixelSpace.tl.x, 0.0f, WIDTH, -1.0f, 1.0f);
+    screenSpace.tl.y = map(pixelSpace.tl.y, 0.0f, HEIGHT, 1.0f, -1.0f);
+    screenSpace.br.x = map(pixelSpace.br.x, 0.0f, WIDTH, -1.0f, 1.0f);
+    screenSpace.br.y = map(pixelSpace.br.y, 0.0f, HEIGHT, 1.0f, -1.0f);
+
+    screenSpace.resize();
 }
 
 void ScreenObject::setRelativeSpace(Rectangle reference)

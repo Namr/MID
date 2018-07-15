@@ -20,6 +20,7 @@ public:
 
   ScreenObject(Rectangle pixel);
   ScreenObject();
+  void setScreenSpace(Rectangle pixelReference);
   void setTextureSpace(Rectangle reference);
   void setRelativeSpace(Rectangle reference);
 };
