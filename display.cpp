@@ -200,7 +200,6 @@ void Display::update(GLFWwindow *window)
         highlighter.pixelSpace = Rectangle(highlighter.pixelSpace.tl, highlighter.pixelSpace.br);
 
         highlighter.setScreenSpace(highlighter.pixelSpace);
-        highlighter.screenSpace.render();
     }
     if (mouse0 == GLFW_RELEASE && highlighting == 1)
     {
@@ -271,6 +270,9 @@ void Display::update(GLFWwindow *window)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+    if(highlighting == 1)
+        highlighter.screenSpace.render();
 }
 
 GLuint Display::loadShader(const char *filepath, GLenum type)
