@@ -215,17 +215,18 @@ void Display::update(GLFWwindow *window)
 
         if (highlighter.screenSpace.intersect(position) == 1)
         {
-            textureCoords = highlighter.textureSpace;
-
+            
             //find the pixel space coordiantes for the current zoom box
-            pixelCoords.tl.x = map(highlighter.relativeSpace.tl.x, 0.0f, 1.0f, 0.0f, origin_width);
-            pixelCoords.tl.y = map(highlighter.relativeSpace.tl.y, 0.0f, 1.0f, 0.0f, origin_height);
-            pixelCoords.br.x = map(highlighter.relativeSpace.br.x, 0.0f, 1.0f, 0.0f, origin_width);
-            pixelCoords.br.y = map(highlighter.relativeSpace.br.y, 0.0f, 1.0f, 0.0f, origin_height);
+            pixelCoords.tl.x = map(highlighter.relativeSpace.tl.x, 0.0f, 1.0f, textureCoords.tl.x * origin_width, textureCoords.br.x * origin_width);
+            pixelCoords.tl.y = map(highlighter.relativeSpace.tl.y, 0.0f, 1.0f, textureCoords.tl.y * origin_height, textureCoords.br.y * origin_height);
+            pixelCoords.br.x = map(highlighter.relativeSpace.br.x, 0.0f, 1.0f, textureCoords.tl.x * origin_width, textureCoords.br.x * origin_width);
+            pixelCoords.br.y = map(highlighter.relativeSpace.br.y, 0.0f, 1.0f, textureCoords.tl.y * origin_height, textureCoords.br.y * origin_height);
 
             pixelCoords = Rectangle(pixelCoords.tl, pixelCoords.br);
 
             image->getRegion(pixelCoords, layer * 5, view);
+
+            textureCoords = highlighter.textureSpace;
             detailMix = 1.0f;
 
             resize();
@@ -271,7 +272,7 @@ void Display::update(GLFWwindow *window)
 
     glDrawElements(GL_TRIANGLES, sizeof(triangles) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-    if(highlighting == 1)
+    if (highlighting == 1)
         highlighter.screenSpace.render();
 }
 
